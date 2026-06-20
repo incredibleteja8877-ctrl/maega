@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../constants.dart';
+import '../data/app_data.dart';
+import '../widgets/section_app_bar.dart';
 
-/// Personal Information screen — matches the assignment screenshot.
-/// Shows Name, Phone and Email, each with a red EDIT action.
+/// Personal Information screen — Name, Phone and Email, each editable via the
+/// red EDIT action. Values are stored in Hive and reflect on the Profile
+/// screen instantly.
 class PersonalInformationScreen extends StatelessWidget {
   const PersonalInformationScreen({super.key});
 
@@ -10,53 +14,101 @@ class PersonalInformationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: kTextDark,
-        elevation: 0,
-        titleSpacing: 0,
-        title: const Text(
-          'Personal Information',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: kTextDark,
-          ),
-        ),
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1, thickness: 1, color: kDivider),
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-        children: [
-          _InfoField(
-            label: 'Name',
-            value: 'Jhon Doe',
-            onEdit: () => _editTapped(context, 'Name'),
-          ),
-          const SizedBox(height: 18),
-          _InfoField(
-            label: 'Phone',
-            value: '+91 9876543210',
-            onEdit: () => _editTapped(context, 'Phone'),
-          ),
-          const SizedBox(height: 18),
-          _InfoField(
-            label: 'Email',
-            value: 'you@example.com',
-            onEdit: () => _editTapped(context, 'Email'),
-          ),
-        ],
+      appBar: backAppBar('Personal Information'),
+      body: ValueListenableBuilder(
+        valueListenable: profileBox.listenable(),
+        builder: (context, Box box, _) {
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+            children: [
+              _InfoField(
+                label: 'Name',
+                value: box.get('name', defaultValue: '') as String,
+                onEdit: () => _editField(
+                  context,
+                  key: 'name',
+                  label: 'Name',
+                  current: box.get('name', defaultValue: '') as String,
+                ),
+              ),
+              const SizedBox(height: 18),
+              _InfoField(
+                label: 'Phone',
+                value: box.get('phone', defaultValue: '') as String,
+                keyboard: TextInputType.phone,
+                onEdit: () => _editField(
+                  context,
+                  key: 'phone',
+                  label: 'Phone',
+                  current: box.get('phone', defaultValue: '') as String,
+                  keyboard: TextInputType.phone,
+                ),
+              ),
+              const SizedBox(height: 18),
+              _InfoField(
+                label: 'Email',
+                value: box.get('email', defaultValue: '') as String,
+                keyboard: TextInputType.emailAddress,
+                onEdit: () => _editField(
+                  context,
+                  key: 'email',
+                  label: 'Email',
+                  current: box.get('email', defaultValue: '') as String,
+                  keyboard: TextInputType.emailAddress,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  void _editTapped(BuildContext context, String field) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Edit $field')),
+  Future<void> _editField(
+    BuildContext context, {
+    required String key,
+    required String label,
+    required String current,
+    TextInputType keyboard = TextInputType.text,
+  }) async {
+    final controller = TextEditingController(text: current);
+    final newValue = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Edit $label'),
+          content: TextField(
+            controller: controller,
+            keyboardType: keyboard,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: label,
+              focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: kRed),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel', style: TextStyle(color: kTextGrey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kRed,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.pop(context, controller.text.trim()),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
     );
+
+    if (newValue != null && newValue.isNotEmpty) {
+      await profileBox.put(key, newValue);
+    }
   }
 }
 
@@ -66,11 +118,13 @@ class _InfoField extends StatelessWidget {
   final String label;
   final String value;
   final VoidCallback onEdit;
+  final TextInputType keyboard;
 
   const _InfoField({
     required this.label,
     required this.value,
     required this.onEdit,
+    this.keyboard = TextInputType.text,
   });
 
   @override

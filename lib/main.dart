@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'constants.dart';
+import 'data/app_data.dart';
 import 'screens/login_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initAppData();
   runApp(const MaegaApp());
 }
 

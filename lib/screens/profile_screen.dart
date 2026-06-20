@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../constants.dart';
+import '../data/app_data.dart';
 import '../widgets/maega_logo.dart';
 import 'login_screen.dart';
 import 'personal_information_screen.dart';
@@ -171,24 +173,29 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              Text(
-                'Jhon Doe',
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.bold,
-                  color: kTextDark,
-                ),
-              ),
-              SizedBox(height: 3),
-              Text(
-                '+91 9876543210',
-                style: TextStyle(fontSize: 13, color: kTextGrey),
-              ),
-            ],
+          ValueListenableBuilder(
+            valueListenable: profileBox.listenable(),
+            builder: (context, Box box, _) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    box.get('name', defaultValue: '') as String,
+                    style: const TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold,
+                      color: kTextDark,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    box.get('phone', defaultValue: '') as String,
+                    style: const TextStyle(fontSize: 13, color: kTextGrey),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
