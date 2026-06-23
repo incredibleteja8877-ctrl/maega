@@ -64,7 +64,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               _MenuItem(
-                icon: Icons.location_on_outlined,
+                icon: Icons.location_on,
                 label: 'Saved Addresses',
                 onTap: () => _push(context, const SavedAddressesScreen()),
               ),
@@ -74,7 +74,7 @@ class ProfileScreen extends StatelessWidget {
                 onTap: () => _push(context, const PaymentMethodsScreen()),
               ),
               _MenuItem(
-                icon: Icons.folder_outlined,
+                icon: Icons.local_offer_outlined,
                 label: 'Offers & Rewards',
                 onTap: () => _open(context, 'Offers & Rewards'),
               ),
@@ -158,25 +158,30 @@ class ProfileScreen extends StatelessWidget {
   Widget _header() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(2.5),
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: kRed,
-            ),
-            child: const CircleAvatar(
-              radius: 28,
-              backgroundColor: Color(0xFFEEEEEE),
-              backgroundImage: AssetImage(kAvatarAsset),
-            ),
-          ),
-          const SizedBox(width: 14),
-          ValueListenableBuilder(
-            valueListenable: profileBox.listenable(),
-            builder: (context, Box box, _) {
-              return Column(
+      child: ValueListenableBuilder(
+        valueListenable: profileBox.listenable(),
+        builder: (context, Box box, _) {
+          final avatarAsset = box.get('avatarAsset', defaultValue: '') as String;
+          return Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(2.5),
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: kRed,
+                ),
+                child: CircleAvatar(
+                  radius: 28,
+                  backgroundColor: const Color(0xFFEEEEEE),
+                  backgroundImage:
+                      avatarAsset.isNotEmpty ? AssetImage(avatarAsset) : null,
+                  child: avatarAsset.isEmpty
+                      ? const Icon(Icons.person, size: 32, color: kTextGrey)
+                      : null,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -194,10 +199,10 @@ class ProfileScreen extends StatelessWidget {
                     style: const TextStyle(fontSize: 13, color: kTextGrey),
                   ),
                 ],
-              );
-            },
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -310,9 +315,16 @@ class _ThinDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16),
-      child: Divider(height: 1, thickness: 1, color: kDivider),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(height: 1, color: kDivider),
+          const SizedBox(height: 3),
+          Container(height: 1, color: kDivider),
+        ],
+      ),
     );
   }
 }

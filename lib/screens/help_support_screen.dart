@@ -32,7 +32,7 @@ class HelpSupportScreen extends StatelessWidget {
               icon: Icons.desktop_windows_outlined,
               label: 'Maega Plus Membership'),
           _TopicRow(icon: Icons.verified_user_outlined, label: 'Maega Safety'),
-          _TopicRow(icon: Icons.verified_outlined, label: 'Claim Warranty'),
+          _TopicRow(icon: Icons.check_circle_outline, label: 'Claim Warranty'),
         ],
       ),
     );

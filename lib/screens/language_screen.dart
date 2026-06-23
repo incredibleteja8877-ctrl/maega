@@ -14,7 +14,7 @@ class _Language {
 
 const List<_Language> _languages = [
   _Language('English', 'English'),
-  _Language('Hindi', 'हिंदी'),
+  _Language('Hindi', 'हिन्दी'),
   _Language('Tamil', 'தமிழ்'),
   _Language('Telugu', 'తెలుగు'),
   _Language('Kannada', 'ಕನ್ನಡ'),

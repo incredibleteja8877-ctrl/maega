@@ -4,6 +4,42 @@ import '../constants.dart';
 import '../data/app_data.dart';
 import '../widgets/section_app_bar.dart';
 
+const _countryCodes = [
+  '+91',  // India
+  '+1',   // USA / Canada
+  '+44',  // UK
+  '+61',  // Australia
+  '+971', // UAE
+  '+65',  // Singapore
+  '+60',  // Malaysia
+  '+49',  // Germany
+  '+33',  // France
+  '+81',  // Japan
+  '+86',  // China
+  '+7',   // Russia
+  '+55',  // Brazil
+  '+27',  // South Africa
+  '+234', // Nigeria
+];
+
+const _codeLabels = {
+  '+91': '+91  India',
+  '+1': '+1    USA / Canada',
+  '+44': '+44  UK',
+  '+61': '+61  Australia',
+  '+971': '+971 UAE',
+  '+65': '+65  Singapore',
+  '+60': '+60  Malaysia',
+  '+49': '+49  Germany',
+  '+33': '+33  France',
+  '+81': '+81  Japan',
+  '+86': '+86  China',
+  '+7': '+7    Russia',
+  '+55': '+55  Brazil',
+  '+27': '+27  South Africa',
+  '+234': '+234 Nigeria',
+};
+
 /// Personal Information screen — Name, Phone and Email, each editable via the
 /// red EDIT action. Values are stored in Hive and reflect on the Profile
 /// screen instantly.
@@ -36,12 +72,9 @@ class PersonalInformationScreen extends StatelessWidget {
                 label: 'Phone',
                 value: box.get('phone', defaultValue: '') as String,
                 keyboard: TextInputType.phone,
-                onEdit: () => _editField(
+                onEdit: () => _editPhoneField(
                   context,
-                  key: 'phone',
-                  label: 'Phone',
-                  current: box.get('phone', defaultValue: '') as String,
-                  keyboard: TextInputType.phone,
+                  box.get('phone', defaultValue: '') as String,
                 ),
               ),
               const SizedBox(height: 18),
@@ -62,6 +95,91 @@ class PersonalInformationScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> _editPhoneField(BuildContext context, String current) async {
+    String selectedCode = '+91';
+    String numberPart = current;
+
+    for (final code in _countryCodes) {
+      if (current.startsWith(code)) {
+        selectedCode = code;
+        numberPart = current.substring(code.length).trim();
+        break;
+      }
+    }
+
+    final controller = TextEditingController(text: numberPart);
+
+    final newValue = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        String picked = selectedCode;
+        return StatefulBuilder(
+          builder: (context, setLocal) {
+            return AlertDialog(
+              title: const Text('Edit Phone'),
+              content: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  DropdownButton<String>(
+                    value: picked,
+                    underline: const SizedBox(),
+                    items: _countryCodes
+                        .map((code) => DropdownMenuItem(
+                              value: code,
+                              child: Text(
+                                _codeLabels[code] ?? code,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) setLocal(() => picked = val);
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: controller,
+                      keyboardType: TextInputType.phone,
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Number',
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: kRed),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel', style: TextStyle(color: kTextGrey)),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kRed,
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () => Navigator.pop(
+                    context,
+                    '$picked ${controller.text.trim()}',
+                  ),
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (newValue != null && newValue.trim().isNotEmpty) {
+      await profileBox.put('phone', newValue.trim());
+    }
   }
 
   Future<void> _editField(

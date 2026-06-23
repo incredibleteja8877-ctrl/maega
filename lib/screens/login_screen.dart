@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../constants.dart';
+import '../data/app_data.dart';
 import 'profile_screen.dart';
+import 'signup_screen.dart';
 
-/// Login screen using static credentials (see constants.dart).
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -24,14 +25,37 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _login() {
+  Future<void> _login() async {
     setState(() => _error = null);
     if (!_formKey.currentState!.validate()) return;
 
     final email = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
 
+    Map<String, String>? userData;
+
     if (email == kDemoEmail && password == kDemoPassword) {
+      userData = {
+        'name': 'Jhon Doe',
+        'phone': '+91 9876543210',
+        'email': 'you@example.com',
+        'avatarAsset': kAvatarAsset,
+      };
+    } else {
+      final stored = usersBox.get(email.toLowerCase());
+      if (stored != null && stored['password'] == password) {
+        userData = {
+          'name': stored['name'] as String? ?? '',
+          'phone': stored['phone'] as String? ?? '',
+          'email': stored['email'] as String? ?? email,
+          'avatarAsset': '',
+        };
+      }
+    }
+
+    if (userData != null) {
+      await profileBox.putAll(userData);
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const ProfileScreen()),
@@ -138,7 +162,32 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Don't have an account?",
+                        style: TextStyle(color: kTextGrey, fontSize: 14),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const SignupScreen()),
+                        ),
+                        child: const Text(
+                          'Sign Up',
+                          style: TextStyle(
+                            color: kRed,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
