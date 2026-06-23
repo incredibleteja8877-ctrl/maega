@@ -49,7 +49,7 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 8),
               _header(),
               const SizedBox(height: 16),
-              const _ThinDivider(),
+              const _ThinDivider(doubled: true),
               const SizedBox(height: 6),
 
               // Menu items
@@ -309,22 +309,25 @@ class _MenuItem extends StatelessWidget {
   }
 }
 
-/// Thin inset divider matching the screenshot.
+/// Thin inset divider — [doubled] shows two parallel lines, otherwise single.
 class _ThinDivider extends StatelessWidget {
-  const _ThinDivider();
+  final bool doubled;
+  const _ThinDivider({this.doubled = false});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(height: 1, color: kDivider),
-          const SizedBox(height: 3),
-          Container(height: 1, color: kDivider),
-        ],
-      ),
+      child: doubled
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(height: 1, color: kDivider),
+                const SizedBox(height: 3),
+                Container(height: 1, color: kDivider),
+              ],
+            )
+          : Container(height: 1, color: kDivider),
     );
   }
 }
