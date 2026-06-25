@@ -13,6 +13,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
+  final _numberCtrl= TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   bool _obscurePass = true;
@@ -23,6 +24,7 @@ class _SignupScreenState extends State<SignupScreen> {
   void dispose() {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
+    _numberCtrl.dispose();
     _passwordCtrl.dispose();
     _confirmCtrl.dispose();
     super.dispose();
@@ -47,7 +49,7 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
-    box.put(email, {'name': name, 'email': email, 'password': password, 'phone': ''});
+    box.put(email, {'name': name, 'email': email, 'password': password, 'phone': _numberCtrl.text.trim()});
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -72,17 +74,10 @@ class _SignupScreenState extends State<SignupScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.star, color: kRed, size: 64),
-                  const SizedBox(height: 8),
-                  const Center(
-                    child: Text(
-                      'MAEGA',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 2,
-                        color: kTextDark,
-                      ),
+                  Center(
+                    child: Image.asset(
+                      'assets/images/maega_logo.png',
+                      height: 120,
                     ),
                   ),
                   const SizedBox(height: 32),
@@ -123,6 +118,17 @@ class _SignupScreenState extends State<SignupScreen> {
                       if (!v.contains('@')) return 'Enter a valid email';
                       return null;
                     },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _numberCtrl,
+                    keyboardType: TextInputType.phone,
+                    decoration: _fieldDecoration(
+                      label: 'Mobile Number',
+                      icon: Icons.phone_outlined,
+                    ),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Enter your mobile number' : null,
                   ),
                   const SizedBox(height: 16),
                   TextFormField(

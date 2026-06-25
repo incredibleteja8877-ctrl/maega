@@ -13,8 +13,8 @@ class HelpSupportScreen extends StatelessWidget {
       appBar: backAppBar('Help And Support'),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-        children: const [
-          Text(
+        children: [
+          const Text(
             'All Topics',
             style: TextStyle(
               fontSize: 20,
@@ -22,17 +22,22 @@ class HelpSupportScreen extends StatelessWidget {
               color: kTextDark,
             ),
           ),
-          SizedBox(height: 6),
-          _TopicRow(icon: Icons.person_outline, label: 'Account'),
+          const SizedBox(height: 6),
+          _TopicRow(icon: const Icon(Icons.person_outline, color: kIconDark, size: 22), label: 'Account'),
+          _TopicRow(icon: const Icon(Icons.person_outline, color: kIconDark, size: 22), label: 'Getting Started With Maega'),
           _TopicRow(
-              icon: Icons.person_outline, label: 'Getting Started With Maega'),
+            icon: Image.asset('assets/images/payment & maega credits.png', width: 22, height: 22),
+            label: 'Payment & Maega Credits',
+          ),
           _TopicRow(
-              icon: Icons.credit_card, label: 'Payment & Maega Credits'),
+            icon: Image.asset('assets/images/Maega plus.png', width: 22, height: 22),
+            label: 'Maega Plus Membership',
+          ),
+          _TopicRow(icon: const Icon(Icons.verified_user_outlined, color: kIconDark, size: 22), label: 'Maega Safety'),
           _TopicRow(
-              icon: Icons.desktop_windows_outlined,
-              label: 'Maega Plus Membership'),
-          _TopicRow(icon: Icons.verified_user_outlined, label: 'Maega Safety'),
-          _TopicRow(icon: Icons.check_circle_outline, label: 'Claim Warranty'),
+            icon: Image.asset('assets/images/claim warranty.png', width: 22, height: 22),
+            label: 'Claim Warranty',
+          ),
         ],
       ),
     );
@@ -40,7 +45,7 @@ class HelpSupportScreen extends StatelessWidget {
 }
 
 class _TopicRow extends StatelessWidget {
-  final IconData icon;
+  final Widget icon;
   final String label;
   const _TopicRow({required this.icon, required this.label});
 
@@ -52,7 +57,7 @@ class _TopicRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 14),
           child: Row(
             children: [
-              Icon(icon, color: kIconDark, size: 22),
+              icon,
               const SizedBox(width: 14),
               Expanded(
                 child: Text(

@@ -22,23 +22,6 @@ const _countryCodes = [
   '+234', // Nigeria
 ];
 
-const _codeLabels = {
-  '+91': '+91  India',
-  '+1': '+1    USA / Canada',
-  '+44': '+44  UK',
-  '+61': '+61  Australia',
-  '+971': '+971 UAE',
-  '+65': '+65  Singapore',
-  '+60': '+60  Malaysia',
-  '+49': '+49  Germany',
-  '+33': '+33  France',
-  '+81': '+81  Japan',
-  '+86': '+86  China',
-  '+7': '+7    Russia',
-  '+55': '+55  Brazil',
-  '+27': '+27  South Africa',
-  '+234': '+234 Nigeria',
-};
 
 /// Personal Information screen — Name, Phone and Email, each editable via the
 /// red EDIT action. Values are stored in Hive and reflect on the Profile
@@ -129,7 +112,7 @@ class PersonalInformationScreen extends StatelessWidget {
                         .map((code) => DropdownMenuItem(
                               value: code,
                               child: Text(
-                                _codeLabels[code] ?? code,
+                                code,
                                 style: const TextStyle(fontSize: 13),
                               ),
                             ))

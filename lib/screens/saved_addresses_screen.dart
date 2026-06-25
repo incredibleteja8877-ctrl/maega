@@ -9,11 +9,16 @@ import 'address_form_screen.dart';
 class SavedAddressesScreen extends StatelessWidget {
   const SavedAddressesScreen({super.key});
 
-  static const _icons = {
-    'home': Icons.home_outlined,
-    'office': Icons.apartment,
-    'other': Icons.location_on_outlined,
-  };
+  static Widget _typeIcon(String type) {
+    switch (type) {
+      case 'home':
+        return Image.asset('assets/images/home.png', width: 20, height: 20);
+      case 'office':
+        return Image.asset('assets/images/office.png', width: 20, height: 20);
+      default:
+        return const Icon(Icons.location_on_outlined, color: kRed, size: 20);
+    }
+  }
 
   void _add(BuildContext context) {
     Navigator.push(
@@ -85,7 +90,7 @@ class SavedAddressesScreen extends StatelessWidget {
                   final data = Map<String, dynamic>.from(box.get(key) as Map);
                   final type = (data['type'] as String?) ?? 'other';
                   return _AddressCard(
-                    icon: _icons[type] ?? Icons.location_on_outlined,
+                    icon: _typeIcon(type),
                     title: (data['title'] as String?) ?? '',
                     address: (data['address'] as String?) ?? '',
                     landmark: (data['landmark'] as String?) ?? '',
@@ -150,7 +155,7 @@ class _AddNewAddress extends StatelessWidget {
 /// A saved-address card: icon + title, address, landmark, and edit/delete
 /// action buttons on the right.
 class _AddressCard extends StatelessWidget {
-  final IconData icon;
+  final Widget icon;
   final String title;
   final String address;
   final String landmark;
@@ -183,7 +188,7 @@ class _AddressCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(icon, color: kRed, size: 20),
+                    icon,
                     const SizedBox(width: 6),
                     Text(
                       title,
@@ -221,16 +226,14 @@ class _AddressCard extends StatelessWidget {
           Column(
             children: [
               _SquareIcon(
-                icon: Icons.edit_outlined,
+                icon: Image.asset('assets/images/edit.png', width: 34, height: 34),
                 bg: const Color(0xFFF0F0F0),
-                fg: kIconDark,
                 onTap: onEdit,
               ),
               const SizedBox(height: 10),
               _SquareIcon(
-                icon: Icons.delete_outline,
+                icon: Image.asset('assets/images/delete-outline-rounded.png', width: 18, height: 18),
                 bg: const Color(0xFFFBE3E8),
-                fg: kRed,
                 onTap: onDelete,
               ),
             ],
@@ -242,14 +245,12 @@ class _AddressCard extends StatelessWidget {
 }
 
 class _SquareIcon extends StatelessWidget {
-  final IconData icon;
+  final Widget icon;
   final Color bg;
-  final Color fg;
   final VoidCallback onTap;
   const _SquareIcon({
     required this.icon,
     required this.bg,
-    required this.fg,
     required this.onTap,
   });
 
@@ -265,7 +266,7 @@ class _SquareIcon extends StatelessWidget {
           color: bg,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, size: 18, color: fg),
+        child: Center(child: icon),
       ),
     );
   }

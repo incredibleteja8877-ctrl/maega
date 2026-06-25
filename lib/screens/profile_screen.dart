@@ -54,7 +54,7 @@ class ProfileScreen extends StatelessWidget {
 
               // Menu items
               _MenuItem(
-                icon: Icons.article_outlined,
+                icon: const Icon(Icons.article_outlined, color: kIconDark, size: 23),
                 label: 'Personal Information',
                 onTap: () => Navigator.push(
                   context,
@@ -64,32 +64,32 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               _MenuItem(
-                icon: Icons.location_on,
+                icon: Image.asset('assets/images/saved addresses.png', width: 23, height: 23),
                 label: 'Saved Addresses',
                 onTap: () => _push(context, const SavedAddressesScreen()),
               ),
               _MenuItem(
-                icon: Icons.credit_card,
+                icon: const Icon(Icons.credit_card, color: kIconDark, size: 23),
                 label: 'Payment Methods',
                 onTap: () => _push(context, const PaymentMethodsScreen()),
               ),
               _MenuItem(
-                icon: Icons.local_offer_outlined,
+                icon: Image.asset('assets/images/offers & rewards.png', width: 23, height: 23),
                 label: 'Offers & Rewards',
                 onTap: () => _open(context, 'Offers & Rewards'),
               ),
               _MenuItem(
-                icon: Icons.translate,
+                icon: Image.asset('assets/images/language.png', width: 23, height: 23),
                 label: 'Language',
                 onTap: () => _push(context, const LanguageScreen()),
               ),
               _MenuItem(
-                icon: Icons.headset_mic_outlined,
+                icon: Image.asset('assets/images/help and support.png', width: 23, height: 23),
                 label: 'Help And Support',
                 onTap: () => _push(context, const HelpSupportScreen()),
               ),
               _MenuItem(
-                icon: Icons.info_outline,
+                icon: const Icon(Icons.info_outline, color: kIconDark, size: 23),
                 label: 'About Maega',
                 onTap: () => _push(context, const AboutScreen()),
               ),
@@ -99,7 +99,7 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 6),
 
               _MenuItem(
-                icon: Icons.delete_outline,
+                icon: Image.asset('assets/images/delete-outline-rounded.png', width: 23, height: 23),
                 label: 'Delete Account',
                 color: kRed,
                 onTap: () => _open(context, 'Delete Account'),
@@ -272,7 +272,7 @@ class ProfileScreen extends StatelessWidget {
 
 /// A single tappable row in the profile menu.
 class _MenuItem extends StatelessWidget {
-  final IconData icon;
+  final Widget icon;
   final String label;
   final VoidCallback onTap;
   final Color color;
@@ -292,7 +292,7 @@ class _MenuItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
         child: Row(
           children: [
-            Icon(icon, color: color, size: 23),
+            icon,
             const SizedBox(width: 18),
             Text(
               label,
@@ -309,7 +309,6 @@ class _MenuItem extends StatelessWidget {
   }
 }
 
-/// Thin inset divider — [doubled] shows two parallel lines, otherwise single.
 class _ThinDivider extends StatelessWidget {
   final bool doubled;
   const _ThinDivider({this.doubled = false});

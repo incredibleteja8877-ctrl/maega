@@ -9,6 +9,12 @@ PreferredSizeWidget backAppBar(String title) {
     foregroundColor: kTextDark,
     elevation: 0,
     titleSpacing: 0,
+    leading: Builder(
+      builder: (context) => IconButton(
+        icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+        onPressed: () => Navigator.pop(context),
+      ),
+    ),
     title: Text(
       title,
       style: const TextStyle(

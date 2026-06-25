@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:maega_app/widgets/maega_logo.dart';
 import '../constants.dart';
 import '../data/app_data.dart';
 import 'profile_screen.dart';
@@ -79,19 +80,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.star, color: kRed, size: 64),
-                  const SizedBox(height: 8),
-                  const Center(
-                    child: Text(
-                      'MAEGA',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 2,
-                        color: kTextDark,
-                      ),
-                    ),
-                  ),
+                  // Center(
+                  //   child: Image.asset(
+                  //     'assets/images/maega_logo.png',
+                  //     height: 120,
+                  //   ),
+                  // ),
+                  MaegaLogo(),
+
                   const SizedBox(height: 32),
                   const Text(
                     'Welcome back',
