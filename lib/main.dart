@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'constants.dart';
 import 'data/app_data.dart';
 import 'screens/login_screen.dart';
@@ -21,7 +22,7 @@ class MaegaApp extends StatelessWidget {
         primaryColor: kRed,
         scaffoldBackgroundColor: Colors.white,
         colorScheme: ColorScheme.fromSeed(seedColor: kRed),
-        fontFamily: 'Roboto',
+        textTheme: GoogleFonts.poppinsTextTheme(),
         useMaterial3: true,
       ),
       home: const LoginScreen(),

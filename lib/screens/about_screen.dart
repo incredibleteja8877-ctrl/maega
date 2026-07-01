@@ -39,7 +39,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                   child: Row(
                     children: const [
-                      MaegaLogo(),
+                      MaegaLogo(width: 70, height: 70),
                       SizedBox(width: 14),
                       Text(
                         'Maega',
@@ -64,8 +64,9 @@ class AboutScreen extends StatelessWidget {
                     _about,
                     textAlign: TextAlign.left,
                     style: TextStyle(
-                      fontSize: 13.5,
-                      height: 1.55,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      height: 1.0,
                       color: kTextDark,
                     ),
                   ),

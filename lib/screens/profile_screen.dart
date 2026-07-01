@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../constants.dart';
 import '../data/app_data.dart';
@@ -108,10 +109,10 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 12),
               _logoutButton(context),
               const SizedBox(height: 10),
-              const Center(
+              Center(
                 child: Text(
                   'Maega V1.0',
-                  style: TextStyle(color: kTextGrey, fontSize: 13),
+                  style: GoogleFonts.poppins(color: kTextGrey, fontSize: 13),
                 ),
               ),
               const SizedBox(height: 16),
@@ -126,28 +127,35 @@ class ProfileScreen extends StatelessWidget {
   Widget _topBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          const MaegaLogo(),
-          const Text(
-            'Profile',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: kTextDark,
+          Center(
+            child: Text(
+              'Profile',
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: kTextDark,
+              ),
             ),
           ),
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: kDivider),
-            ),
-            child: const Icon(Icons.settings, color: kIconDark, size: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const MaegaLogo(),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: kDivider),
+                ),
+                child: const Icon(Icons.settings, color: kIconDark, size: 20),
+              ),
+            ],
           ),
         ],
       ),
@@ -187,7 +195,7 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   Text(
                     box.get('name', defaultValue: '') as String,
-                    style: const TextStyle(
+                    style: GoogleFonts.poppins(
                       fontSize: 19,
                       fontWeight: FontWeight.bold,
                       color: kTextDark,
@@ -196,7 +204,7 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     box.get('phone', defaultValue: '') as String,
-                    style: const TextStyle(fontSize: 13, color: kTextGrey),
+                    style: GoogleFonts.poppins(fontSize: 13, color: kTextGrey),
                   ),
                 ],
               ),
@@ -248,21 +256,21 @@ class ProfileScreen extends StatelessWidget {
       unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
       showUnselectedLabels: true,
       elevation: 8,
-      items: const [
+      items: [
         BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined),
+          icon: Image.asset('assets/images/home nav.png', width: 24, height: 24),
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.menu_book_outlined),
+          icon: Image.asset('assets/images/Booking.png', width: 24, height: 24),
           label: 'Booking',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.storefront_outlined),
+          icon: Image.asset('assets/images/Store.png', width: 24, height: 24),
           label: 'Store',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
+          icon: Image.asset('assets/images/profile nav.png', width: 24, height: 24),
           label: 'Profile',
         ),
       ],
@@ -296,7 +304,7 @@ class _MenuItem extends StatelessWidget {
             const SizedBox(width: 18),
             Text(
               label,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
                 fontSize: 15,
                 color: color == kIconDark ? kTextDark : color,
                 fontWeight: FontWeight.w600,

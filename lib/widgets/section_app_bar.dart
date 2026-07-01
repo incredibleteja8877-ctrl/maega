@@ -18,8 +18,9 @@ PreferredSizeWidget backAppBar(String title) {
     title: Text(
       title,
       style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
+        fontSize: 28,
+        fontWeight: FontWeight.w600,
+        height: 1.0,
         color: kTextDark,
       ),
     ),
