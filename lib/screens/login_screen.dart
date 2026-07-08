@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
         'avatarAsset': kAvatarAsset,
       };
     } else {
-      final stored = usersBox.get(email.toLowerCase());
+      final stored = getUser(email);
       if (stored != null && stored['password'] == password) {
         userData = {
           'name': stored['name'] as String? ?? '',
@@ -55,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (userData != null) {
-      await profileBox.putAll(userData);
+      await putAllProfileValues(userData);
       if (!mounted) return;
       Navigator.pushReplacement(
         context,

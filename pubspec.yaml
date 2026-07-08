@@ -36,13 +36,13 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Local database (works on web + mobile) for profile and addresses.
-  hive: ^2.2.3
-  hive_flutter: ^1.1.0
+  shared_preferences: ^2.5.3
   google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.4  
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -97,3 +97,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/images/app_icon.png"

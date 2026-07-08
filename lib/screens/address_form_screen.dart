@@ -3,13 +3,13 @@ import '../constants.dart';
 import '../data/app_data.dart';
 import '../widgets/section_app_bar.dart';
 
-/// Add or edit a saved address. Pass [addressKey] (the Hive key) to edit an
-/// existing one; leave it null to add a new address.
+/// Add or edit a saved address. Pass [addressId] to edit an existing one;
+/// leave it null to add a new address.
 class AddressFormScreen extends StatefulWidget {
-  final dynamic addressKey;
-  const AddressFormScreen({super.key, this.addressKey});
+  final int? addressId;
+  const AddressFormScreen({super.key, this.addressId});
 
-  bool get isEditing => addressKey != null;
+  bool get isEditing => addressId != null;
 
   @override
   State<AddressFormScreen> createState() => _AddressFormScreenState();
@@ -31,7 +31,7 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
   void initState() {
     super.initState();
     final existing = widget.isEditing
-        ? Map<String, dynamic>.from(addressBox.get(widget.addressKey) as Map)
+        ? getAddress(widget.addressId!) ?? <String, dynamic>{}
         : <String, dynamic>{};
     _type = (existing['type'] as String?) ?? 'home';
     _addressCtrl =
@@ -56,9 +56,9 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
       'landmark': _landmarkCtrl.text.trim(),
     };
     if (widget.isEditing) {
-      await addressBox.put(widget.addressKey, data);
+      await updateAddress(widget.addressId!, data);
     } else {
-      await addressBox.add(data);
+      await addAddress(data);
     }
     if (mounted) Navigator.pop(context);
   }

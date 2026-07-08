@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import '../constants.dart';
 import '../data/app_data.dart';
 import '../widgets/section_app_bar.dart';
 import 'address_form_screen.dart';
 
-/// Saved Addresses screen — add, edit and delete addresses stored in Hive.
+/// Saved Addresses screen — add, edit and delete addresses stored via
+/// shared_preferences.
 class SavedAddressesScreen extends StatelessWidget {
   const SavedAddressesScreen({super.key});
 
@@ -27,14 +27,14 @@ class SavedAddressesScreen extends StatelessWidget {
     );
   }
 
-  void _edit(BuildContext context, dynamic key) {
+  void _edit(BuildContext context, int id) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => AddressFormScreen(addressKey: key)),
+      MaterialPageRoute(builder: (_) => AddressFormScreen(addressId: id)),
     );
   }
 
-  Future<void> _delete(BuildContext context, dynamic key, String title) async {
+  Future<void> _delete(BuildContext context, int id, String title) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -57,7 +57,7 @@ class SavedAddressesScreen extends StatelessWidget {
       ),
     );
     if (confirm == true) {
-      await addressBox.delete(key);
+      await deleteAddress(id);
     }
   }
 
@@ -67,15 +67,14 @@ class SavedAddressesScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: backAppBar('Saved Addresses'),
       body: ValueListenableBuilder(
-        valueListenable: addressBox.listenable(),
-        builder: (context, Box box, _) {
-          final keys = box.keys.toList();
+        valueListenable: addressesNotifier,
+        builder: (context, List<Map<String, dynamic>> addresses, _) {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
             children: [
               _AddNewAddress(onTap: () => _add(context)),
               const SizedBox(height: 16),
-              if (keys.isEmpty)
+              if (addresses.isEmpty)
                 const Padding(
                   padding: EdgeInsets.only(top: 40),
                   child: Center(
@@ -85,18 +84,18 @@ class SavedAddressesScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              for (final key in keys) ...[
+              for (final data in addresses) ...[
                 Builder(builder: (context) {
-                  final data = Map<String, dynamic>.from(box.get(key) as Map);
+                  final id = data['id'] as int;
                   final type = (data['type'] as String?) ?? 'other';
                   return _AddressCard(
                     icon: _typeIcon(type),
                     title: (data['title'] as String?) ?? '',
                     address: (data['address'] as String?) ?? '',
                     landmark: (data['landmark'] as String?) ?? '',
-                    onEdit: () => _edit(context, key),
+                    onEdit: () => _edit(context, id),
                     onDelete: () =>
-                        _delete(context, key, (data['title'] as String?) ?? ''),
+                        _delete(context, id, (data['title'] as String?) ?? ''),
                   );
                 }),
                 const SizedBox(height: 14),

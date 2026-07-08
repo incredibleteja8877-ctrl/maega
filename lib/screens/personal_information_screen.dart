@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import '../constants.dart';
 import '../data/app_data.dart';
 import '../widgets/section_app_bar.dart';
@@ -24,8 +23,8 @@ const _countryCodes = [
 
 
 /// Personal Information screen — Name, Phone and Email, each editable via the
-/// red EDIT action. Values are stored in Hive and reflect on the Profile
-/// screen instantly.
+/// red EDIT action. Values are stored via shared_preferences and reflect on
+/// the Profile screen instantly.
 class PersonalInformationScreen extends StatelessWidget {
   const PersonalInformationScreen({super.key});
 
@@ -35,41 +34,41 @@ class PersonalInformationScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: backAppBar('Personal Information'),
       body: ValueListenableBuilder(
-        valueListenable: profileBox.listenable(),
-        builder: (context, Box box, _) {
+        valueListenable: profileNotifier,
+        builder: (context, Map<String, dynamic> profile, _) {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
             children: [
               _InfoField(
                 label: 'Name',
-                value: box.get('name', defaultValue: '') as String,
+                value: profile['name'] as String? ?? '',
                 onEdit: () => _editField(
                   context,
                   key: 'name',
                   label: 'Name',
-                  current: box.get('name', defaultValue: '') as String,
+                  current: profile['name'] as String? ?? '',
                 ),
               ),
               const SizedBox(height: 18),
               _InfoField(
                 label: 'Phone',
-                value: box.get('phone', defaultValue: '') as String,
+                value: profile['phone'] as String? ?? '',
                 keyboard: TextInputType.phone,
                 onEdit: () => _editPhoneField(
                   context,
-                  box.get('phone', defaultValue: '') as String,
+                  profile['phone'] as String? ?? '',
                 ),
               ),
               const SizedBox(height: 18),
               _InfoField(
                 label: 'Email',
-                value: box.get('email', defaultValue: '') as String,
+                value: profile['email'] as String? ?? '',
                 keyboard: TextInputType.emailAddress,
                 onEdit: () => _editField(
                   context,
                   key: 'email',
                   label: 'Email',
-                  current: box.get('email', defaultValue: '') as String,
+                  current: profile['email'] as String? ?? '',
                   keyboard: TextInputType.emailAddress,
                 ),
               ),
@@ -161,7 +160,7 @@ class PersonalInformationScreen extends StatelessWidget {
     );
 
     if (newValue != null && newValue.trim().isNotEmpty) {
-      await profileBox.put('phone', newValue.trim());
+      await putProfileValue('phone', newValue.trim());
     }
   }
 
@@ -208,7 +207,7 @@ class PersonalInformationScreen extends StatelessWidget {
     );
 
     if (newValue != null && newValue.isNotEmpty) {
-      await profileBox.put(key, newValue);
+      await putProfileValue(key, newValue);
     }
   }
 }

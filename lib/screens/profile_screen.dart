@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import '../constants.dart';
 import '../data/app_data.dart';
 import '../widgets/maega_logo.dart';
@@ -167,9 +166,9 @@ class ProfileScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: ValueListenableBuilder(
-        valueListenable: profileBox.listenable(),
-        builder: (context, Box box, _) {
-          final avatarAsset = box.get('avatarAsset', defaultValue: '') as String;
+        valueListenable: profileNotifier,
+        builder: (context, Map<String, dynamic> profile, _) {
+          final avatarAsset = profile['avatarAsset'] as String? ?? '';
           return Row(
             children: [
               Container(
@@ -194,7 +193,7 @@ class ProfileScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    box.get('name', defaultValue: '') as String,
+                    profile['name'] as String? ?? '',
                     style: GoogleFonts.poppins(
                       fontSize: 19,
                       fontWeight: FontWeight.bold,
@@ -203,7 +202,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    box.get('phone', defaultValue: '') as String,
+                    profile['phone'] as String? ?? '',
                     style: GoogleFonts.poppins(fontSize: 13, color: kTextGrey),
                   ),
                 ],

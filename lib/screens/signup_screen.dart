@@ -43,13 +43,12 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
-    final box = usersBox;
-    if (box.containsKey(email)) {
+    if (userExists(email)) {
       setState(() => _error = 'An account with this email already exists.');
       return;
     }
 
-    box.put(email, {'name': name, 'email': email, 'password': password, 'phone': _numberCtrl.text.trim()});
+    putUser(email, {'name': name, 'email': email, 'password': password, 'phone': _numberCtrl.text.trim()});
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
