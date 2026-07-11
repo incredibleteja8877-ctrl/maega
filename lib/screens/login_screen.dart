@@ -1,8 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:maega_app/widgets/maega_logo.dart';
 import '../constants.dart';
-import '../data/app_data.dart';
-import 'profile_screen.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -17,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _obscure = true;
+  bool _loading = false;
   String? _error;
 
   @override
@@ -30,39 +30,25 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _error = null);
     if (!_formKey.currentState!.validate()) return;
 
-    final email = _emailCtrl.text.trim();
-    final password = _passwordCtrl.text;
-
-    Map<String, String>? userData;
-
-    if (email == kDemoEmail && password == kDemoPassword) {
-      userData = {
-        'name': 'Jhon Doe',
-        'phone': '+91 9876543210',
-        'email': 'you@example.com',
-        'avatarAsset': kAvatarAsset,
-      };
-    } else {
-      final stored = getUser(email);
-      if (stored != null && stored['password'] == password) {
-        userData = {
-          'name': stored['name'] as String? ?? '',
-          'phone': stored['phone'] as String? ?? '',
-          'email': stored['email'] as String? ?? email,
-          'avatarAsset': '',
-        };
-      }
-    }
-
-    if (userData != null) {
-      await putAllProfileValues(userData);
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const ProfileScreen()),
+    setState(() => _loading = true);
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailCtrl.text.trim(),
+        password: _passwordCtrl.text,
       );
-    } else {
-      setState(() => _error = 'Invalid email or password.');
+      // AuthGate (below this route) has already swapped to Home in the
+      // background by the time the auth-state change reaches it — pop back
+      // to reveal it if this LoginScreen was pushed on top of something.
+      if (mounted && Navigator.canPop(context)) Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      const invalidCodes = {'user-not-found', 'wrong-password', 'invalid-credential'};
+      setState(() {
+        _error = invalidCodes.contains(e.code)
+            ? 'Invalid email or password.'
+            : (e.message ?? 'Login failed.');
+      });
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -142,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: _login,
+                      onPressed: _loading ? null : _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kRed,
                         foregroundColor: Colors.white,
@@ -151,11 +137,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text(
-                        'Login',
-                        style:
-                            TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+                      child: _loading
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : const Text(
+                              'Login',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -182,18 +177,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFBEAEE),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'Demo credentials\nEmail: admin@maega.com\nPassword: 123456',
-                      style: TextStyle(fontSize: 12, color: kTextGrey),
-                    ),
                   ),
                 ],
               ),

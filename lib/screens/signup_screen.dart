@@ -1,6 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../constants.dart';
-import '../data/app_data.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -18,6 +19,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _confirmCtrl = TextEditingController();
   bool _obscurePass = true;
   bool _obscureConfirm = true;
+  bool _loading = false;
   String? _error;
 
   @override
@@ -30,33 +32,42 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  void _signup() {
+  Future<void> _signup() async {
     setState(() => _error = null);
     if (!_formKey.currentState!.validate()) return;
 
     final email = _emailCtrl.text.trim().toLowerCase();
-    final password = _passwordCtrl.text;
-    final name = _nameCtrl.text.trim();
 
-    if (email == kDemoEmail.toLowerCase()) {
-      setState(() => _error = 'This email is already registered.');
-      return;
+    setState(() => _loading = true);
+    try {
+      final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: _passwordCtrl.text,
+      );
+      await FirebaseFirestore.instance.collection('users').doc(cred.user!.uid).set({
+        'name': _nameCtrl.text.trim(),
+        'email': email,
+        'phone': _numberCtrl.text.trim(),
+        'avatarAsset': '',
+      });
+      // Account creation also signs the user in, so AuthGate (below this
+      // pushed route) has already swapped to Home in the background — pop
+      // back to reveal it.
+      if (mounted) Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _error = e.code == 'email-already-in-use'
+            ? 'An account with this email already exists.'
+            : (e.message ?? 'Sign up failed.');
+      });
+    } on FirebaseException catch (e) {
+      // The auth account was created, but writing the profile doc failed
+      // (e.g. Firestore rules not yet propagated). Surface it instead of
+      // failing silently.
+      setState(() => _error = 'Account created, but saving your profile failed: ${e.message}');
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
-
-    if (userExists(email)) {
-      setState(() => _error = 'An account with this email already exists.');
-      return;
-    }
-
-    putUser(email, {'name': name, 'email': email, 'password': password, 'phone': _numberCtrl.text.trim()});
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Account created! Please log in.'),
-        backgroundColor: kRed,
-      ),
-    );
-    Navigator.pop(context);
   }
 
   @override
@@ -186,7 +197,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: _signup,
+                      onPressed: _loading ? null : _signup,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kRed,
                         foregroundColor: Colors.white,
@@ -195,11 +206,20 @@ class _SignupScreenState extends State<SignupScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+                      child: _loading
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : const Text(
+                              'Sign Up',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 20),

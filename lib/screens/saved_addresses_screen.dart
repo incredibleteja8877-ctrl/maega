@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../constants.dart';
-import '../data/app_data.dart';
+import '../providers/app_data_provider.dart';
 import '../widgets/section_app_bar.dart';
 import 'address_form_screen.dart';
 
@@ -57,7 +58,8 @@ class SavedAddressesScreen extends StatelessWidget {
       ),
     );
     if (confirm == true) {
-      await deleteAddress(id);
+      if (!context.mounted) return;
+      await context.read<AppDataProvider>().deleteAddress(id);
     }
   }
 
@@ -66,9 +68,9 @@ class SavedAddressesScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: backAppBar('Saved Addresses'),
-      body: ValueListenableBuilder(
-        valueListenable: addressesNotifier,
-        builder: (context, List<Map<String, dynamic>> addresses, _) {
+      body: Consumer<AppDataProvider>(
+        builder: (context, appData, _) {
+          final addresses = appData.addresses;
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
             children: [

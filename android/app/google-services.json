@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "20479240859",
+    "project_id": "maega-app-6c466",
+    "storage_bucket": "maega-app-6c466.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20479240859:android:ef80535b0b7a103a25b43e",
+        "android_client_info": {
+          "package_name": "com.example.maega_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCuqSqD_f2fi-snO2MAddlIoDozW5FqHps"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

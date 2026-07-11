@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../constants.dart';
-import '../data/app_data.dart';
+import '../providers/app_data_provider.dart';
 import '../widgets/section_app_bar.dart';
 
 /// Add or edit a saved address. Pass [addressId] to edit an existing one;
@@ -31,7 +32,8 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
   void initState() {
     super.initState();
     final existing = widget.isEditing
-        ? getAddress(widget.addressId!) ?? <String, dynamic>{}
+        ? context.read<AppDataProvider>().getAddress(widget.addressId!) ??
+            <String, dynamic>{}
         : <String, dynamic>{};
     _type = (existing['type'] as String?) ?? 'home';
     _addressCtrl =
@@ -55,10 +57,11 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
       'address': _addressCtrl.text.trim(),
       'landmark': _landmarkCtrl.text.trim(),
     };
+    final appData = context.read<AppDataProvider>();
     if (widget.isEditing) {
-      await updateAddress(widget.addressId!, data);
+      await appData.updateAddress(widget.addressId!, data);
     } else {
-      await addAddress(data);
+      await appData.addAddress(data);
     }
     if (mounted) Navigator.pop(context);
   }

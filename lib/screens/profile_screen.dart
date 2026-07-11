@@ -1,9 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../constants.dart';
-import '../data/app_data.dart';
+import '../providers/app_data_provider.dart';
 import '../widgets/maega_logo.dart';
-import 'login_screen.dart';
+import '../widgets/main_bottom_nav.dart';
+import 'auth_gate.dart';
 import 'personal_information_screen.dart';
 import 'payment_methods_screen.dart';
 import 'saved_addresses_screen.dart';
@@ -27,11 +30,129 @@ class ProfileScreen extends StatelessWidget {
     Navigator.push(context, MaterialPageRoute(builder: (_) => page));
   }
 
-  void _logout(BuildContext context) {
+  Future<void> _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    if (!context.mounted) return;
+    await context.read<AppDataProvider>().clear();
+    if (!context.mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => const AuthGate()),
       (route) => false,
+    );
+  }
+
+  Future<void> _deleteAccount(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: const Text(
+          'This will permanently delete your account and all your data. This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: kTextGrey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kRed,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !context.mounted) return;
+
+    final appData = context.read<AppDataProvider>();
+    try {
+      await _performDelete(appData);
+    } on FirebaseAuthException catch (e) {
+      if (e.code != 'requires-recent-login') {
+        if (context.mounted) _showError(context, e.message ?? 'Failed to delete account.');
+        return;
+      }
+      if (!context.mounted) return;
+      final reauthed = await _reauthenticate(context);
+      if (!reauthed) return;
+      try {
+        await _performDelete(appData);
+      } catch (e2) {
+        if (context.mounted) _showError(context, 'Failed to delete account: $e2');
+        return;
+      }
+    } catch (e) {
+      if (context.mounted) _showError(context, 'Failed to delete account: $e');
+      return;
+    }
+
+    if (context.mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const AuthGate()),
+        (route) => false,
+      );
+    }
+  }
+
+  Future<void> _performDelete(AppDataProvider appData) async {
+    await appData.deleteAllData();
+    await FirebaseAuth.instance.currentUser?.delete();
+    await appData.clear();
+  }
+
+  /// Prompts for the account password and re-authenticates, as Firebase
+  /// requires a recent sign-in before allowing account deletion.
+  Future<bool> _reauthenticate(BuildContext context) async {
+    final controller = TextEditingController();
+    final password = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm your password'),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          autofocus: true,
+          decoration: const InputDecoration(labelText: 'Password'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: kTextGrey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kRed,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+    if (password == null || password.isEmpty) return false;
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || user.email == null) return false;
+    try {
+      await user.reauthenticateWithCredential(
+        EmailAuthProvider.credential(email: user.email!, password: password),
+      );
+      return true;
+    } on FirebaseAuthException catch (e) {
+      if (context.mounted) _showError(context, e.message ?? 'Re-authentication failed.');
+      return false;
+    }
+  }
+
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: kRed),
     );
   }
 
@@ -39,7 +160,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: _bottomNav(context),
+      bottomNavigationBar: const MainBottomNav(currentIndex: 3),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -102,7 +223,7 @@ class ProfileScreen extends StatelessWidget {
                 icon: Image.asset('assets/images/delete-outline-rounded.png', width: 23, height: 23),
                 label: 'Delete Account',
                 color: kRed,
-                onTap: () => _open(context, 'Delete Account'),
+                onTap: () => _deleteAccount(context),
               ),
 
               const SizedBox(height: 12),
@@ -165,9 +286,9 @@ class ProfileScreen extends StatelessWidget {
   Widget _header() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ValueListenableBuilder(
-        valueListenable: profileNotifier,
-        builder: (context, Map<String, dynamic> profile, _) {
+      child: Consumer<AppDataProvider>(
+        builder: (context, appData, _) {
+          final profile = appData.profile;
           final avatarAsset = profile['avatarAsset'] as String? ?? '';
           return Row(
             children: [
@@ -238,41 +359,6 @@ class ProfileScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  // ---- Bottom navigation ----
-  Widget _bottomNav(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: 3,
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.white,
-      selectedItemColor: kRed,
-      unselectedItemColor: kTextGrey,
-      selectedFontSize: 12,
-      unselectedFontSize: 12,
-      selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-      showUnselectedLabels: true,
-      elevation: 8,
-      items: [
-        BottomNavigationBarItem(
-          icon: Image.asset('assets/images/home nav.png', width: 24, height: 24),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Image.asset('assets/images/Booking.png', width: 24, height: 24),
-          label: 'Booking',
-        ),
-        BottomNavigationBarItem(
-          icon: Image.asset('assets/images/Store.png', width: 24, height: 24),
-          label: 'Store',
-        ),
-        BottomNavigationBarItem(
-          icon: Image.asset('assets/images/profile nav.png', width: 24, height: 24),
-          label: 'Profile',
-        ),
-      ],
     );
   }
 }

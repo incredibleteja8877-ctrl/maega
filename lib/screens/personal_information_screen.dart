@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../constants.dart';
-import '../data/app_data.dart';
+import '../providers/app_data_provider.dart';
 import '../widgets/section_app_bar.dart';
 
 const _countryCodes = [
@@ -33,9 +34,9 @@ class PersonalInformationScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: backAppBar('Personal Information'),
-      body: ValueListenableBuilder(
-        valueListenable: profileNotifier,
-        builder: (context, Map<String, dynamic> profile, _) {
+      body: Consumer<AppDataProvider>(
+        builder: (context, appData, _) {
+          final profile = appData.profile;
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
             children: [
@@ -160,7 +161,10 @@ class PersonalInformationScreen extends StatelessWidget {
     );
 
     if (newValue != null && newValue.trim().isNotEmpty) {
-      await putProfileValue('phone', newValue.trim());
+      if (!context.mounted) return;
+      await context
+          .read<AppDataProvider>()
+          .putProfileValue('phone', newValue.trim());
     }
   }
 
@@ -207,7 +211,8 @@ class PersonalInformationScreen extends StatelessWidget {
     );
 
     if (newValue != null && newValue.isNotEmpty) {
-      await putProfileValue(key, newValue);
+      if (!context.mounted) return;
+      await context.read<AppDataProvider>().putProfileValue(key, newValue);
     }
   }
 }
