@@ -96,8 +96,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       label: 'Email',
                       icon: Icons.email_outlined,
                     ),
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Enter your email' : null,
+                    validator: (v) {
+                      final value = v?.trim() ?? '';
+                      if (value.isEmpty) return 'Enter your email';
+                      if (!value.toLowerCase().endsWith('@maega.com')) {
+                        return 'Only @maega.com email addresses are allowed';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(

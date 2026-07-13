@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../constants.dart';
 import '../providers/app_data_provider.dart';
@@ -93,11 +94,13 @@ class PersonalInformationScreen extends StatelessWidget {
     }
 
     final controller = TextEditingController(text: numberPart);
+    final phonePattern = RegExp(r'^[6-9]\d{9}$');
 
     final newValue = await showDialog<String>(
       context: context,
       builder: (context) {
         String picked = selectedCode;
+        String? error;
         return StatefulBuilder(
           builder: (context, setLocal) {
             return AlertDialog(
@@ -127,9 +130,14 @@ class PersonalInformationScreen extends StatelessWidget {
                       controller: controller,
                       keyboardType: TextInputType.phone,
                       autofocus: true,
-                      decoration: const InputDecoration(
+                      maxLength: 10,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                      ],
+                      decoration: InputDecoration(
                         labelText: 'Number',
-                        focusedBorder: UnderlineInputBorder(
+                        errorText: error,
+                        focusedBorder: const UnderlineInputBorder(
                           borderSide: BorderSide(color: kRed),
                         ),
                       ),
@@ -147,10 +155,14 @@ class PersonalInformationScreen extends StatelessWidget {
                     backgroundColor: kRed,
                     foregroundColor: Colors.white,
                   ),
-                  onPressed: () => Navigator.pop(
-                    context,
-                    '$picked ${controller.text.trim()}',
-                  ),
+                  onPressed: () {
+                    final number = controller.text.trim();
+                    if (!phonePattern.hasMatch(number)) {
+                      setLocal(() => error = 'Enter a valid 10-digit mobile number');
+                      return;
+                    }
+                    Navigator.pop(context, '$picked $number');
+                  },
                   child: const Text('Save'),
                 ),
               ],

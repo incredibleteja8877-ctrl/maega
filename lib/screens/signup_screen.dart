@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../constants.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -50,9 +51,18 @@ class _SignupScreenState extends State<SignupScreen> {
         'phone': _numberCtrl.text.trim(),
         'avatarAsset': '',
       });
-      // Account creation also signs the user in, so AuthGate (below this
-      // pushed route) has already swapped to Home in the background — pop
-      // back to reveal it.
+      // Account creation also signs the user in. Sign back out so AuthGate
+      // (below this pushed route) reverts to showing Login, then pop after
+      // a brief success message to reveal it.
+      await FirebaseAuth.instance.signOut();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account created successfully! Please log in.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      await Future.delayed(const Duration(seconds: 2));
       if (mounted) Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -124,8 +134,11 @@ class _SignupScreenState extends State<SignupScreen> {
                       icon: Icons.email_outlined,
                     ),
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Enter your email';
-                      if (!v.contains('@')) return 'Enter a valid email';
+                      final value = v?.trim() ?? '';
+                      if (value.isEmpty) return 'Enter your email';
+                      if (!value.toLowerCase().endsWith('@maega.com')) {
+                        return 'Only @maega.com email addresses are allowed';
+                      }
                       return null;
                     },
                   ),
@@ -133,12 +146,22 @@ class _SignupScreenState extends State<SignupScreen> {
                   TextFormField(
                     controller: _numberCtrl,
                     keyboardType: TextInputType.phone,
+                    maxLength: 10,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
                     decoration: _fieldDecoration(
                       label: 'Mobile Number',
                       icon: Icons.phone_outlined,
                     ),
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Enter your mobile number' : null,
+                    validator: (v) {
+                      final value = v?.trim() ?? '';
+                      if (value.isEmpty) return 'Enter your mobile number';
+                      if (!RegExp(r'^[6-9]\d{9}$').hasMatch(value)) {
+                        return 'Enter a valid 10-digit mobile number';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
