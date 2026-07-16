@@ -7,6 +7,7 @@ import 'constants.dart';
 import 'providers/app_data_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/auth_gate.dart';
+import 'widgets/idle_timeout_wrapper.dart';
 
 
 Future<void> main() async {
@@ -60,6 +61,8 @@ class MaegaApp extends StatelessWidget {
               useMaterial3: true,
             ),
             home: const AuthGate(),
+            builder: (context, child) =>
+                IdleTimeoutWrapper(child: child!),
           );
         },
       ),
