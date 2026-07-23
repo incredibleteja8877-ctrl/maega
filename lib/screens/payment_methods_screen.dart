@@ -1,31 +1,89 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../constants.dart';
+import '../providers/app_data_provider.dart';
 import '../widgets/section_app_bar.dart';
+import 'card_form_screen.dart';
 
 /// Payment Methods screen — Saved Cards, Wallets and UPI sections.
 class PaymentMethodsScreen extends StatelessWidget {
   const PaymentMethodsScreen({super.key});
+
+  void _addCard(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CardFormScreen()),
+    );
+  }
+
+  Future<void> _deleteCard(BuildContext context, int id, String label) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove Card'),
+        content: Text('Remove the $label card?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: kTextGrey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kRed,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      if (!context.mounted) return;
+      await context.read<AppDataProvider>().deleteCard(id);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: backAppBar('Payment Methods'),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
-        children: const [
-          _SectionLabel('SAVED CARDS', spaced: true),
-          SizedBox(height: 10),
-          _AddNewCard(),
-          SizedBox(height: 22),
-          _SectionLabel('Wallets'),
-          SizedBox(height: 10),
-          _AccountCard(names: ['Mobikwik', 'Phonepe', 'Amazon Pay']),
-          SizedBox(height: 24),
-          _UpiLabel(),
-          SizedBox(height: 10),
-          _AccountCard(names: ['Google Pay', 'Phonepe', 'Paytm']),
-        ],
+      body: Consumer<AppDataProvider>(
+        builder: (context, appData, _) {
+          final cards = appData.cards;
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+            children: [
+              const _SectionLabel('SAVED CARDS', spaced: true),
+              const SizedBox(height: 10),
+              _AddNewCard(onTap: () => _addCard(context)),
+              for (final data in cards) ...[
+                const SizedBox(height: 12),
+                Builder(builder: (context) {
+                  final id = data['id'] as int;
+                  final brand = (data['brand'] as String?) ?? 'Card';
+                  final last4 = (data['last4'] as String?) ?? '••••';
+                  return _SavedCard(
+                    brand: brand,
+                    last4: last4,
+                    holderName: (data['holderName'] as String?) ?? '',
+                    expiry: (data['expiry'] as String?) ?? '',
+                    onDelete: () => _deleteCard(context, id, '$brand •••• $last4'),
+                  );
+                }),
+              ],
+              const SizedBox(height: 22),
+              const _SectionLabel('Wallets'),
+              const SizedBox(height: 10),
+              const _AccountCard(names: ['Mobikwik', 'Phonepe', 'Amazon Pay']),
+              const SizedBox(height: 24),
+              const _UpiLabel(),
+              const SizedBox(height: 10),
+              const _AccountCard(names: ['Google Pay', 'Phonepe', 'Paytm']),
+            ],
+          );
+        },
       ),
     );
   }
@@ -75,12 +133,69 @@ class _UpiLabel extends StatelessWidget {
 
 /// Bordered "ADD NEW CARD" row with a red-outlined plus box.
 class _AddNewCard extends StatelessWidget {
-  const _AddNewCard();
+  final VoidCallback onTap;
+  const _AddNewCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: kDivider),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: kRed),
+              ),
+              child: const Icon(Icons.add, color: kRed, size: 18),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'ADD NEW CARD',
+              style: TextStyle(
+                color: kRed,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                letterSpacing: 0.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A saved card: brand + masked number, holder name and expiry, with a
+/// delete action on the right.
+class _SavedCard extends StatelessWidget {
+  final String brand;
+  final String last4;
+  final String holderName;
+  final String expiry;
+  final VoidCallback onDelete;
+
+  const _SavedCard({
+    required this.brand,
+    required this.last4,
+    required this.holderName,
+    required this.expiry,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: kDivider),
@@ -88,22 +203,47 @@ class _AddNewCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 26,
-            height: 26,
+            width: 40,
+            height: 28,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: kRed),
+              color: kRed,
+              borderRadius: BorderRadius.circular(5),
             ),
-            child: const Icon(Icons.add, color: kRed, size: 18),
+            child: const Icon(Icons.credit_card, color: Colors.white, size: 16),
           ),
           const SizedBox(width: 12),
-          const Text(
-            'ADD NEW CARD',
-            style: TextStyle(
-              color: kRed,
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-              letterSpacing: 0.3,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$brand •••• $last4',
+                  style: const TextStyle(
+                    color: kTextDark,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '$holderName · Exp $expiry',
+                  style: const TextStyle(color: kTextGrey, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          InkWell(
+            onTap: onDelete,
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFBE3E8),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.delete_outline, color: kRed, size: 18),
             ),
           ),
         ],

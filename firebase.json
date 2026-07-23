@@ -1,4 +1,7 @@
 {"flutter":{"platforms":{"android":{"default":{"projectId":"maega-app-6c466","appId":"1:20479240859:android:ef80535b0b7a103a25b43e","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"maega-app-6c466","configurations":{"android":"1:20479240859:android:ef80535b0b7a103a25b43e","ios":"1:20479240859:ios:92af33dbc84ae36c25b43e","macos":"1:20479240859:ios:92af33dbc84ae36c25b43e","web":"1:20479240859:web:876e25440b3fcb7a25b43e","windows":"1:20479240859:web:493f9072ef1ebb3a25b43e"}}}}},
+  "firestore": {
+    "rules": "firestore.rules"
+  },
   "hosting": {
     "public": "build/web",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],

@@ -198,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
       childAspectRatio: 2.6,
       children: [
         _QuickAction(
-          icon: Icons.receipt_long_outlined,
+          imagePath: 'assets/images/All orders.png',
           label: 'All Orders',
           onTap: () => _open('All Orders'),
         ),
@@ -259,19 +259,21 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _NewsCard(
             tag: 'TRAINING',
-            tagColor: const Color(0xFFB5651D),
+            tagColor: kRed,
             title: 'Safety Training 101',
             description: 'Essential on-site safety protocols.',
             showPlay: true,
+            imageUrl: 'https://picsum.photos/seed/safety-training/400/200',
             onTap: () => _open('Safety Training 101'),
           ),
           const SizedBox(width: 12),
           _NewsCard(
             tag: 'ADMIN NEWS',
-            tagColor: const Color(0xFF2E7D6B),
+            tagColor: kRed,
             title: 'New Incentive Program',
             description: 'Earn rewards for more th...',
-            showPlay: false,
+            showPlay: true,
+            imageUrl: 'https://picsum.photos/seed/incentive-program/400/200',
             onTap: () => _open('New Incentive Program'),
           ),
         ],
@@ -335,12 +337,14 @@ class _StatCard extends StatelessWidget {
 }
 
 class _QuickAction extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? imagePath;
   final String label;
   final VoidCallback onTap;
 
   const _QuickAction({
-    required this.icon,
+    this.icon,
+    this.imagePath,
     required this.label,
     required this.onTap,
   });
@@ -365,7 +369,12 @@ class _QuickAction extends StatelessWidget {
                 color: Color(0xFFFBE3E8),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: kRed, size: 18),
+              child: imagePath != null
+                  ? Padding(
+                      padding: const EdgeInsets.all(7),
+                      child: Image.asset(imagePath!, color: kRed),
+                    )
+                  : Icon(icon, color: kRed, size: 18),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -393,6 +402,7 @@ class _NewsCard extends StatelessWidget {
   final String title;
   final String description;
   final bool showPlay;
+  final String imageUrl;
   final VoidCallback onTap;
 
   const _NewsCard({
@@ -401,6 +411,7 @@ class _NewsCard extends StatelessWidget {
     required this.title,
     required this.description,
     required this.showPlay,
+    required this.imageUrl,
     required this.onTap,
   });
 
@@ -424,13 +435,15 @@ class _NewsCard extends StatelessWidget {
                   height: 96,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        tagColor.withOpacity(0.85),
-                        tagColor.withOpacity(0.5),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                    color: tagColor.withOpacity(0.3),
+                    image: DecorationImage(
+                      image: NetworkImage(imageUrl),
+                      fit: BoxFit.cover,
+                      colorFilter: ColorFilter.mode(
+                        tagColor.withOpacity(0.35),
+                        BlendMode.darken,
+                      ),
+                      onError: (_, _) {},
                     ),
                   ),
                 ),
@@ -441,7 +454,7 @@ class _NewsCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: tagColor,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -449,16 +462,31 @@ class _NewsCard extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: tagColor,
+                        color: Colors.white,
                       ),
                     ),
                   ),
                 ),
                 if (showPlay)
-                  const Positioned.fill(
+                  Positioned.fill(
                     child: Center(
-                      child: Icon(Icons.play_circle_fill,
-                          color: Colors.white, size: 34),
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.25),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Icon(Icons.play_arrow_rounded,
+                            color: kRed, size: 26),
+                      ),
                     ),
                   ),
               ],

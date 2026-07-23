@@ -16,9 +16,12 @@ class AppDataProvider extends ChangeNotifier {
 
   Map<String, dynamic> _profile = {};
   List<Map<String, dynamic>> _addresses = [];
+  List<Map<String, dynamic>> _cards = [];
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _cardsSub;
 
   Map<String, dynamic> get profile => _profile;
   List<Map<String, dynamic>> get addresses => _addresses;
+  List<Map<String, dynamic>> get cards => _cards;
 
   DocumentReference<Map<String, dynamic>> get _userDoc =>
       _firestore.collection('users').doc(_uid);
@@ -40,17 +43,26 @@ class AppDataProvider extends ChangeNotifier {
         ..sort((a, b) => (a['id'] as int).compareTo(b['id'] as int));
       notifyListeners();
     });
+
+    _cardsSub = _userDoc.collection('cards').snapshots().listen((snapshot) {
+      _cards = snapshot.docs.map((doc) => doc.data()).toList()
+        ..sort((a, b) => (a['id'] as int).compareTo(b['id'] as int));
+      notifyListeners();
+    });
   }
 
   /// Detaches listeners and resets state. Call on sign-out.
   Future<void> clear() async {
     await _profileSub?.cancel();
     await _addressesSub?.cancel();
+    await _cardsSub?.cancel();
     _profileSub = null;
     _addressesSub = null;
+    _cardsSub = null;
     _uid = null;
     _profile = {};
     _addresses = [];
+    _cards = [];
     notifyListeners();
   }
 
@@ -96,6 +108,26 @@ class AppDataProvider extends ChangeNotifier {
     await _userDoc.collection('addresses').doc(id.toString()).delete();
   }
 
+  // ---- Saved cards ----
+  // Only ever stores brand/last4/expiry/holder name — never the full card
+  // number or CVV, which must not be persisted outside a PCI-compliant vault.
+
+  int _nextCardId() {
+    if (_cards.isEmpty) return 1;
+    return _cards.map((e) => e['id'] as int).reduce((a, b) => a > b ? a : b) +
+        1;
+  }
+
+  Future<void> addCard(Map<String, dynamic> data) async {
+    final id = _nextCardId();
+    final entry = {'id': id, ...data};
+    await _userDoc.collection('cards').doc(id.toString()).set(entry);
+  }
+
+  Future<void> deleteCard(int id) async {
+    await _userDoc.collection('cards').doc(id.toString()).delete();
+  }
+
   // ---- Account deletion ----
 
   /// Deletes the profile doc and every saved address from Firestore. Does
@@ -103,8 +135,12 @@ class AppDataProvider extends ChangeNotifier {
   /// `FirebaseAuth.instance.currentUser?.delete()` alongside this.
   Future<void> deleteAllData() async {
     final addressesSnap = await _userDoc.collection('addresses').get();
+    final cardsSnap = await _userDoc.collection('cards').get();
     final batch = _firestore.batch();
     for (final doc in addressesSnap.docs) {
+      batch.delete(doc.reference);
+    }
+    for (final doc in cardsSnap.docs) {
       batch.delete(doc.reference);
     }
     batch.delete(_userDoc);
@@ -115,6 +151,7 @@ class AppDataProvider extends ChangeNotifier {
   void dispose() {
     _profileSub?.cancel();
     _addressesSub?.cancel();
+    _cardsSub?.cancel();
     super.dispose();
   }
 }
