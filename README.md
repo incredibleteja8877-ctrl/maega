@@ -1,17 +1,27 @@
-# maega_app
+# Maega
 
-A new Flutter project.
+A Flutter service-marketplace app for on-demand service technicians (cleaning, AC repair, and similar jobs), covering authentication, job and booking management, earnings tracking, and profile settings.
 
-## Getting Started
+## What it does
 
-This project is a starting point for a Flutter application.
+- **Authentication & real-time sync** — Firebase Authentication and Cloud Firestore keep user profiles, saved addresses, and payment methods in sync, with stream subscriptions managed across the sign-in/sign-out lifecycle.
+- **Job-tracking workflow** — status tabs (Assigned / In Progress / History), booking search, and an earnings dashboard with daily/weekly/monthly stats and withdrawal history.
+- **State management** — reactive state via the Provider package, including app-wide light/dark theming persisted with Shared Preferences.
+- **UI** — built directly from Figma designs, including animations and Material 3 theming.
 
-A few resources to get you started if this is your first Flutter project:
+## Security
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Firestore access is scoped per authenticated user — see [`firestore.rules`](./firestore.rules). Each user can only read/write their own profile, saved addresses, and cards; there is no open or wildcard access.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Stack
+
+Flutter · Dart · Firebase (Authentication, Cloud Firestore) · Provider · Shared Preferences
+
+## Getting started
+
+```
+flutter pub get
+flutter run
+```
+
+Requires a Firebase project configured via `lib/firebase_options.dart` (FlutterFire CLI).
